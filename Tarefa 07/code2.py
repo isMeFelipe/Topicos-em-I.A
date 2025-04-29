@@ -3,28 +3,40 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 from tabulate import tabulate
 import string
-import nltk
+import re  # Biblioteca de expressões regulares
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
+import seaborn as sns
+import matplotlib.pyplot as plt
 
-# Baixar recursos necessários do NLTK
-nltk.download('punkt')
-nltk.download('stopwords')
+# Função para tokenizar manualmente usando expressões regulares
+def word_tokenize_manual(text):
+    # Usamos uma expressão regular para separar as palavras
+    return re.findall(r'\b\w+\b', text)
 
 def preprocess_text(text):
     """Pré-processamento de texto"""
     text = text.lower()
     text = text.translate(str.maketrans('', '', string.punctuation))
-    tokens = word_tokenize(text)
+    tokens = word_tokenize_manual(text)  # Agora usamos a tokenização manual
     stop_words = set(stopwords.words('english'))
     tokens = [word for word in tokens if word not in stop_words]
     stemmer = PorterStemmer()
     tokens = [stemmer.stem(word) for word in tokens]
     return ' '.join(tokens)
+
+def plot_confusion(y_test, y_pred, model_name):
+    """Plota a matriz de confusão"""
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.title(f"Matriz de Confusão - {model_name}")
+    plt.ylabel('Real')
+    plt.xlabel('Predito')
+    plt.show()
 
 def evaluate_model(model, X_test, y_test, model_name):
     """Avalia um modelo e retorna métricas"""
@@ -36,6 +48,9 @@ def evaluate_model(model, X_test, y_test, model_name):
     classes = [k for k in report.keys() if k not in ['accuracy', 'macro avg', 'weighted avg']]
     minority_class = min(classes, key=lambda x: report[x]['support'])
     
+    # Mostrar matriz de confusão
+    plot_confusion(y_test, y_pred, model_name)
+
     return {
         'Modelo': model_name,
         'Acurácia': accuracy,
@@ -59,8 +74,12 @@ def load_and_prepare_data(csv_file):
     if len(df.columns) < 2:
         print("Erro: O dataset deve ter pelo menos duas colunas (rótulo e texto).")
         return None
+
+    # Limitando para no máximo 1000 registros
+    # df = df.sample(n=min(1000, len(df)), random_state=42).reset_index(drop=True)
+    df = df.sample(n=len(df), random_state=42).reset_index(drop=True)
     
-    print("\nPrimeiras linhas do dataset original:")
+    print("\nPrimeiras linhas do dataset original (limitado a 100 registros):")
     print(df.head())
     
     # Separar features e rótulos
@@ -163,13 +182,21 @@ def load_and_prepare_data(csv_file):
 
 # Exemplo de uso
 if __name__ == "__main__":
-    arquivo_csv = "test.csv"  
-    resultado = load_and_prepare_data(arquivo_csv)
+    # Primeiro, treina usando o 'train.csv'
+    arquivo_train = "train.csv"  
+    resultado_train = load_and_prepare_data(arquivo_train)
     
-    if resultado:
-        print("\nProcesso concluído com sucesso!")
-        print("\nResumo das dimensões dos dados:")
-        print(f"- Vetores BoW: {resultado['X_train_uni'].shape[1]} features")
-        print(f"- Vetores TF-IDF: {resultado['X_train_tfidf'].shape[1]} features")
-        print(f"- Exemplos de treino: {resultado['X_train_uni'].shape[0]}")
-        print(f"- Exemplos de teste: {resultado['X_test_uni'].shape[0]}")
+    if resultado_train:
+        print("\nTreinamento concluído com sucesso!")
+        print("\nResumo das dimensões dos dados de treino:")
+        print(f"- Vetores BoW: {resultado_train['X_train_uni'].shape[1]} features")
+        print(f"- Vetores TF-IDF: {resultado_train['X_train_tfidf'].shape[1]} features")
+        print(f"- Exemplos de treino: {resultado_train['X_train_uni'].shape[0]}")
+        print(f"- Exemplos de teste: {resultado_train['X_test_uni'].shape[0]}")
+    
+    # Agora, aplica a análise usando o 'test.csv'
+    arquivo_test = "test.csv"  
+    resultado_test = load_and_prepare_data(arquivo_test)
+    
+    if resultado_test:
+        print("\nAnálise no conjunto de testes concluída com sucesso!")

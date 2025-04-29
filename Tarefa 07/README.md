@@ -5,3 +5,5 @@
 df = df.sample(n=500, random_state=42)
 
 pip install pandas scikit-learn
+
+pip install pandas scikit-learn tabulate nltk seaborn
