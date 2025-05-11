@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+jinja2
+pandas
+scikit-learn
+joblib
+transformers
+torch
+google-api-python-client
+python-dotenv
+nltk
+spacy
+matplotlib
+tqdm
