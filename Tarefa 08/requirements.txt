@@ -12,3 +12,7 @@ nltk
 spacy
 matplotlib
 tqdm
+jsonlines
+datasets
+accelerate
+
