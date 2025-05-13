@@ -25,6 +25,8 @@ def extract_video_info(video_url: str) -> dict:
     # Tenta identificar se é um vídeo do tipo Shorts
     if "youtube.com/shorts/" in video_url:
         video_id = video_url.split("shorts/")[1].split("?")[0]  # Extrai o ID do Shorts
+    elif "youtu.be/" in video_url:
+        video_id = video_url.split("youtu.be/")[1].split("?")[0]
     else:
         video_id = video_url.split("v=")[1].split("&")[0]  # Para vídeos padrão
 
@@ -42,20 +44,24 @@ def extract_video_info(video_url: str) -> dict:
 
 # Função para extrair os comentários de um vídeo
 def extract_comments(video_url: str, max_comments: int = 10000):
-    # Verifique se a URL é de um vídeo tradicional
-    if "v=" in video_url:
+    # Verifique se a URL é de um vídeo Shorts
+    if "youtube.com/shorts/" in video_url:
+        try:
+            video_id = video_url.split("shorts/")[1].split("?")[0]
+        except IndexError:
+            raise ValueError(f"Falha ao extrair o ID do Shorts da URL: {video_url}")
+    # Verifique se a URL é de um vídeo curto (youtu.be)
+    elif "youtu.be/" in video_url:
+        try:
+            video_id = video_url.split("youtu.be/")[1].split("?")[0]
+        except IndexError:
+            raise ValueError(f"Falha ao extrair o ID do vídeo da URL: {video_url}")
+    # Para vídeos padrão (youtube.com/watch?v=ID)
+    else:
         try:
             video_id = video_url.split("v=")[1].split("&")[0]
         except IndexError:
             raise ValueError(f"Falha ao extrair o ID do vídeo da URL: {video_url}")
-    # Verifique se a URL é de um vídeo Shorts
-    elif "shorts/" in video_url:
-        try:
-            video_id = video_url.split("shorts/")[1]
-        except IndexError:
-            raise ValueError(f"Falha ao extrair o ID do Shorts da URL: {video_url}")
-    else:
-        raise ValueError(f"A URL fornecida ({video_url}) não contém um ID de vídeo válido.")
         
     url = f"https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId={video_id}&maxResults={max_comments}&key={YOUTUBE_API_KEY}"
     response = requests.get(url).json()

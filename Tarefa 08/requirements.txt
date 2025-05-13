@@ -21,3 +21,4 @@ google-cloud-translate
 sentencepiece
 sacremoses
 python-dateutil
+python-multipart
