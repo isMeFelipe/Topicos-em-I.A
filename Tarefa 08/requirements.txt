@@ -15,4 +15,9 @@ tqdm
 jsonlines
 datasets
 accelerate
-
+fastapi
+requests
+google-cloud-translate
+sentencepiece
+sacremoses
+python-dateutil

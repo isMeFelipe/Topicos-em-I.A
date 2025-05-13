@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Ragebait Detector</title>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+</head>
+
+<body>
+    <h1>Ragebait Detector</h1>
+    <form method="post" action="/analyze">
+        <input type="text" name="video_url" placeholder="YouTube URL">
+        <button type="submit">Analisar</button>
+    </form>
+
+    {% if ragebait_classification is defined %}
+    <h2>Resultados:</h2>
+    <ul>
+        <li>Clickbait Score: {{ clickbait_score }}</li>
+        <li>Hate Speech Score: {{ hate_speech_score }}</li>
+        <li>Temporal Score: {{ temporal_score }}</li>
+        <li>Political Score: {{ political_score }}</li>
+        <li>Anger Score: {{ anger_score }}</li>
+        <li><strong>Classificação de Ragebait: {{ ragebait_classification }}</strong></li>
+    </ul>
+    {% endif %}
+</body>
+</html>

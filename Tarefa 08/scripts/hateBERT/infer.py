@@ -1,22 +1,35 @@
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from torch.nn.functional import softmax
 
-# Carregar o modelo e tokenizador treinado
-model = AutoModelForSequenceClassification.from_pretrained("./models/hatebert_model")
-tokenizer = AutoTokenizer.from_pretrained("./models/hatebert_model")
+# Caminho do modelo treinado
+model_path = "./models/hatebert_model"
 
-# Função para prever discurso de ódio
-def predict_hate_speech(comment):
-    inputs = tokenizer(comment, return_tensors="pt", padding=True, truncation=True)
+# Carrega modelo e tokenizador
+model = AutoModelForSequenceClassification.from_pretrained(model_path)
+tokenizer = AutoTokenizer.from_pretrained('GroNLP/hateBERT')
+
+# Coloca o modelo em modo de avaliação
+model.eval()
+
+# Exemplo de texto para testar
+text = "kids like that disgust me!"
+
+# Tokeniza o texto
+inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+
+# Desativa gradientes (modo de inferência)
+with torch.no_grad():
     outputs = model(**inputs)
-    prediction = torch.argmax(outputs.logits, dim=1)
-    return prediction.item()
 
-# Exemplo de uso
-comment = "I hate this!"
-prediction = predict_hate_speech(comment)
+# Obtém as logits (valores antes do softmax)
+logits = outputs.logits
 
-if prediction == 1:  # Discurso de ódio
-    print("Discurso de ódio detectado")
-else:
-    print("Não é discurso de ódio")
+# Aplica softmax para obter probabilidades
+probs = softmax(logits, dim=-1)
+
+# Classe prevista
+predicted_class = torch.argmax(probs, dim=1).item()
+
+print(f"Texto: {text}")
+print(f"Classe prevista: {predicted_class} | Probabilidades: {probs.tolist()}")
