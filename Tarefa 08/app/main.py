@@ -20,29 +20,24 @@ app.mount("/static", StaticFiles(directory="app/static"), name="static")
 
 templates = Jinja2Templates(directory="app/templates")
 
-# Definir os limiares fixos para cada parâmetro
-PARAM_THRESHOLD = {
-    'clickbait': 0.4,        # Limiar para a pontuação de clickbait
-    'hate_speech': 0.4,      # Limiar para a pontuação de discurso de ódio
-    'anger': 0.4             # Limiar para a pontuação de raiva
-}
-
 PARAM_WEIGHTS = {
-    'clickbait': 2.0,        # Peso para clickbait
-    'hate_speech': 1.5,      # Peso para discurso de ódio
-    'anger': 2.0             # Peso para raiva
+    'clickbait': 1.5,
+    'anger': 1.5,
+    'hate_speech': 2.0
 }
-
 
 def classify_ragebait(scores):
-    """
-    Função para classificar com base nas pontuações ponderadas.
-    """
-    weighted_score_sum = sum([scores[param] * PARAM_WEIGHTS[param] for param in PARAM_THRESHOLD])
+    weighted_score = sum([
+        scores['clickbait'] * PARAM_WEIGHTS['clickbait'],
+        scores['anger'] * PARAM_WEIGHTS['anger'],
+        scores['hate_speech'] * PARAM_WEIGHTS['hate_speech']
+    ])
 
-    if weighted_score_sum >= 2.5:
+    if weighted_score >= 2.8:
         return "Ragebait"
     return "Não Ragebait"
+
+
 
 
 @app.get("/", response_class=HTMLResponse)
