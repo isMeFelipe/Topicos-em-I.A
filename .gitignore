@@ -10,6 +10,8 @@ __pycache__/
 *.jpeg
 *.png
 
+*/models/hatebert_model/*
+
 # Distribution / packaging
 .Python
 build/

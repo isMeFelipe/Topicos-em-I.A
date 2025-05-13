@@ -4,7 +4,5 @@ python scripts/hateBERT/train_hate_bert.py
 
 uvicorn app.main:app --reload
 
-
-
-Just Donald Trump being an absolute idiot
-https://www.youtube.com/watch?v=PBpARgVJ6Hc
+Link do drive com hateBert:
+https://drive.google.com/drive/u/0/folders/1_B7TeTjogkNu30Uzjk5BpmvBX42LTWz1

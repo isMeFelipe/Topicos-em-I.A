@@ -1,28 +1,245 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ragebait Detector</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff4757;
+            --secondary-color: #2f3542;
+            --accent-color: #ff6b81;
+            --light-color: #f1f2f6;
+            --dark-color: #1e272e;
+            --success-color: #2ed573;
+            --warning-color: #ffa502;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .description {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #666;
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 30px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 5px 0 0 5px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        button {
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .results h2 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .score-list {
+            list-style: none;
+        }
+        
+        .score-list li {
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            background-color: white;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        
+        .score-list li strong {
+            color: var(--secondary-color);
+        }
+        
+        .score-list li span {
+            text-align: right;
+            flex-grow: 1;
+            display: inline-block;
+        }
+        
+        .classification {
+            margin-top: 20px;
+            padding: 15px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 5px;
+        }
+        
+        .ragebait-true {
+            background-color: #ffecec;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+        
+        .ragebait-false {
+            background-color: #e8f5e9;
+            color: var(--success-color);
+            border: 2px solid var(--success-color);
+        }
+        
+        .score-bar {
+            height: 5px;
+            background-color: #eee;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .score-fill {
+            height: 100%;
+            background-color: var(--accent-color);
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+            
+            input[type="text"] {
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            
+            button {
+                border-radius: 5px;
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Ragebait Detector</h1>
-    <form method="post" action="/analyze">
-        <input type="text" name="video_url" placeholder="YouTube URL">
-        <button type="submit">Analisar</button>
-    </form>
-
-    {% if ragebait_classification is defined %}
-    <h2>Resultados:</h2>
-    <ul>
-        <li>Clickbait Score: {{ clickbait_score }}</li>
-        <li>Hate Speech Score: {{ hate_speech_score }}</li>
-        <li>Temporal Score: {{ temporal_score }}</li>
-        <li>Political Score: {{ political_score }}</li>
-        <li>Anger Score: {{ anger_score }}</li>
-        <li><strong>Classificação de Ragebait: {{ ragebait_classification }}</strong></li>
-    </ul>
-    {% endif %}
+    <div class="container">
+        <h1>Ragebait Detector</h1>
+        <p class="description">Analise vídeos do YouTube para identificar conteúdo projetado para provocar raiva ou engajamento negativo</p>
+        
+        <form method="post" action="/analyze">
+            <div class="input-group">
+                <input type="text" name="video_url" placeholder="Cole a URL do vídeo do YouTube aqui..." required>
+                <button type="submit">Analisar</button>
+            </div>
+        </form>
+        
+        {% if ragebait_classification is defined %}
+        <div class="results" style="display: block;">
+            <h2>Resultados da Análise</h2>
+            <ul class="score-list">
+                <li>
+                    <span>Pontuação de Clickbait:</span>
+                    <span><strong>{{ clickbait_score }}%</strong></span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: {{ clickbait_score }}%;"></div>
+                    </div>
+                </li>
+                <li>
+                    <span>Pontuação de Discurso de Ódio:</span>
+                    <span><strong>{{ hate_speech_score }}%</strong></span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: {{ hate_speech_score }}%;"></div>
+                    </div>
+                </li>
+                <li>
+                    <span>Pontuação de Raiva:</span>
+                    <span><strong>{{ anger_score }}%</strong></span>
+                    <div class="score-bar">
+                        <div class="score-fill" style="width: {{ anger_score }}%;"></div>
+                    </div>
+                </li>
+            </ul>
+            
+            <div class="classification {% if ragebait_classification == 'Sim' %}ragebait-true{% else %}ragebait-false{% endif %}">
+                Classificação de Ragebait: <strong>{{ ragebait_classification }}</strong>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <footer>
+        &copy; 2023 Ragebait Detector | Ferramenta de análise de conteúdo
+    </footer>
 </body>
+
 </html>

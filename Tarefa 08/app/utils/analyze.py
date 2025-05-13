@@ -22,7 +22,12 @@ def translate_texts(texts, model, tokenizer, batch_size=8):
 
 # Função para extrair informações do vídeo
 def extract_video_info(video_url: str) -> dict:
-    video_id = video_url.split("v=")[1].split("&")[0]
+    # Tenta identificar se é um vídeo do tipo Shorts
+    if "youtube.com/shorts/" in video_url:
+        video_id = video_url.split("shorts/")[1].split("?")[0]  # Extrai o ID do Shorts
+    else:
+        video_id = video_url.split("v=")[1].split("&")[0]  # Para vídeos padrão
+
     url = f"https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id={video_id}&key={YOUTUBE_API_KEY}"
     response = requests.get(url).json()
 
@@ -34,9 +39,24 @@ def extract_video_info(video_url: str) -> dict:
 
     return video_info
 
+
 # Função para extrair os comentários de um vídeo
-def extract_comments(video_url: str, max_comments: int = 100) -> List[str]:
-    video_id = video_url.split("v=")[1].split("&")[0]
+def extract_comments(video_url: str, max_comments: int = 10000):
+    # Verifique se a URL é de um vídeo tradicional
+    if "v=" in video_url:
+        try:
+            video_id = video_url.split("v=")[1].split("&")[0]
+        except IndexError:
+            raise ValueError(f"Falha ao extrair o ID do vídeo da URL: {video_url}")
+    # Verifique se a URL é de um vídeo Shorts
+    elif "shorts/" in video_url:
+        try:
+            video_id = video_url.split("shorts/")[1]
+        except IndexError:
+            raise ValueError(f"Falha ao extrair o ID do Shorts da URL: {video_url}")
+    else:
+        raise ValueError(f"A URL fornecida ({video_url}) não contém um ID de vídeo válido.")
+        
     url = f"https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId={video_id}&maxResults={max_comments}&key={YOUTUBE_API_KEY}"
     response = requests.get(url).json()
 
@@ -64,22 +84,6 @@ def analyze_comments(comments, model, tokenizer):
 
     avg_hate = sum(hate_speech_scores) / len(hate_speech_scores) if hate_speech_scores else 0.0
     return avg_hate
-
-
-
-# Função para análise temporal (por exemplo, a idade do vídeo)
-def analyze_temporal(comments: list[str], publish_time: str) -> float:
-    try:
-        publish_datetime = datetime.strptime(publish_time, "%Y-%m-%dT%H:%M:%S.%fZ")
-    except ValueError:
-        publish_datetime = datetime.strptime(publish_time, "%Y-%m-%dT%H:%M:%SZ")
-    
-    current_datetime = datetime.now()
-    time_diff = (current_datetime - publish_datetime).days
-
-    # Quanto mais recente, maior a pontuação (de 0 a 1)
-    temporal_score = max(0, 1 - time_diff / 365)
-    return temporal_score
 
 # Função para detectar o contexto político
 def detect_political_context(text: str) -> float:
