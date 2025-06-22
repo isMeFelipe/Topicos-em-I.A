@@ -1,8 +1,7 @@
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.decomposition import PCA
-from sklearn.metrics import silhouette_score
+from sklearn.feature_selection import f_classif
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -32,47 +31,42 @@ if len(cat_cols) > 0:
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(df_clustering)
 
-# === 7. Redução de dimensionalidade com PCA (95% variância) ===
-pca = PCA(n_components=0.95, random_state=42)
-X_pca = pca.fit_transform(X_scaled)
-
-print(f"Dimensão original: {X_scaled.shape[1]}, após PCA: {X_pca.shape[1]}")
-
-# === 8. Avaliar Silhouette Score para k=2..10 ===
-silhouette_scores = []
-k_values = range(8, 21)
-for k in k_values:
-    kmeans = KMeans(n_clusters=k, random_state=42, n_init=50)
-    clusters = kmeans.fit_predict(X_pca)
-    score = silhouette_score(X_pca, clusters)
-    silhouette_scores.append(score)
-
-plt.figure(figsize=(8, 5))
-plt.plot(k_values, silhouette_scores, 'bo-', linewidth=2, markersize=8)
-plt.xlabel('Número de Clusters (k)')
-plt.ylabel('Silhouette Score')
-plt.title('Avaliação para escolha do número ideal de clusters')
-plt.grid(True)
-plt.show()
-
-# === 9. Escolher o número de clusters e rodar KMeans final ===
-N_CLUSTERS = int(input("Digite o número de clusters desejado (baseado no gráfico acima): "))
+# === 7. Rodar KMeans para clustering ===
+N_CLUSTERS = int(input("Digite o número de clusters desejado: "))
 kmeans = KMeans(n_clusters=N_CLUSTERS, random_state=42, n_init=50)
-clusters = kmeans.fit_predict(X_pca)
+clusters = kmeans.fit_predict(X_scaled)
 
-# === 10. Salvar resultado com cluster no dataframe original ===
+# === 8. Análise de importância das features (ANOVA f_classif) ===
+F_values, p_values = f_classif(X_scaled, clusters)
+feature_names = df_clustering.columns
+
+feat_importance = pd.DataFrame({
+    'feature': feature_names,
+    'F_value': F_values,
+    'p_value': p_values
+}).sort_values(by='F_value', ascending=False)
+
+print("\n===== Features mais importantes para diferenciar os clusters =====\n")
+print(feat_importance.head(15))
+
+# === 9. Salvar resultado com cluster no dataframe original ===
 df_filtered = df.loc[df_clustering.index].copy()
 df_filtered['cluster_group'] = clusters
 df_filtered.to_csv("okcupid_profiles_clustered.csv", index=False)
 print("\n✅ Clustering concluído! Arquivo salvo como 'okcupid_profiles_clustered.csv'")
 
-# === 11. Visualização PCA dos clusters ===
-import seaborn as sns
+# === 10. Visualização PCA dos clusters para efeito visual ===
+from sklearn.decomposition import PCA
+
+pca = PCA(n_components=2, random_state=42)
+X_pca = pca.fit_transform(X_scaled)
+
 plot_df = pd.DataFrame({
     'PCA1': X_pca[:, 0],
     'PCA2': X_pca[:, 1],
     'cluster': clusters
 })
+
 plt.figure(figsize=(10, 6))
 sns.scatterplot(data=plot_df, x='PCA1', y='PCA2', hue='cluster', palette='Set2', s=60)
 plt.title(f"Visualização dos Clusters (K={N_CLUSTERS} + PCA)")
