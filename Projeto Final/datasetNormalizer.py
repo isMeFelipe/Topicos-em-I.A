@@ -21,7 +21,7 @@ df.dropna(axis=1, how='all', inplace=True)
 
 max_unique = 10
 categorical_cols = df.select_dtypes(include=['object']).columns
-few_cat_cols = [col for col in categorical_cols if df[col].nunique() <= max_unique and col != 'education' and col != 'orientation' and col != 'sex' and col != 'drinks' and col != 'smokes']
+few_cat_cols = [col for col in categorical_cols if df[col].nunique() <= max_unique and col != 'education' and col != 'orientation' and col != 'sex']
 
 label_encoders = {}
 for col in few_cat_cols:
@@ -216,36 +216,37 @@ df['sex_group'] = df['sex'].map(sex_mapping).fillna(-1).astype(int)
 df = df.drop(columns=['sex'])
 df = df.rename(columns={'sex_group': 'sex'})
 
-# =======================================
-# 12. Agrupar 'drinks'
-# =======================================
+# -2% de acurácia geral
+# # =======================================
+# # 12. Agrupar 'drinks'
+# # =======================================
 
-# Mapeamento para drinks
-drinks_mapping = {
-    'not at all': 0,
-    'rarely': 1,
-    'socially': 1,
-    'often': 2,
-    'very often': 2,
-    'desperately': 2
-}
-df['drinks_grouped'] = df['drinks'].map(drinks_mapping).fillna(-1).astype(int)
-df = df.drop(columns=['drinks'])
-df = df.rename(columns={'drinks_grouped': 'drinks'})
+# # Mapeamento para drinks
+# drinks_mapping = {
+#     'not at all': 0,
+#     'rarely': 1,
+#     'socially': 1,
+#     'often': 2,
+#     'very often': 2,
+#     'desperately': 2
+# }
+# df['drinks_grouped'] = df['drinks'].map(drinks_mapping).fillna(-1).astype(int)
+# df = df.drop(columns=['drinks'])
+# df = df.rename(columns={'drinks_grouped': 'drinks'})
 
-# =======================================
-# 13. Agrupar 'smokes'
-# =======================================
-smokes_mapping = {
-    'no': 0,
-    'trying to quit': 0,
-    'sometimes': 1,
-    'when drinking': 1,
-    'yes': 1
-}
-df['smokes_grouped'] = df['smokes'].map(smokes_mapping).fillna(-1).astype(int)
-df = df.drop(columns=['smokes'])
-df = df.rename(columns={'smokes_grouped': 'smokes'})
+# # =======================================
+# # 13. Agrupar 'smokes'
+# # =======================================
+# smokes_mapping = {
+#     'no': 0,
+#     'trying to quit': 0,
+#     'sometimes': 1,
+#     'when drinking': 1,
+#     'yes': 1
+# }
+# df['smokes_grouped'] = df['smokes'].map(smokes_mapping).fillna(-1).astype(int)
+# df = df.drop(columns=['smokes'])
+# df = df.rename(columns={'smokes_grouped': 'smokes'})
 
 # =======================================
 # Salvar resultado

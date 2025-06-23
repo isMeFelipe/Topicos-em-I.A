@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import joblib  # <-- Novo
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
@@ -12,7 +13,7 @@ df_matches = pd.read_csv("relacionamentos_com_match.csv")
 # Features que serão usadas no modelo
 features = [
     'status', 'wants_kids', 'smokes', 'diet', 'income', 'has_kids',
-     'drinks', 'height', 'age', 'drugs', 'education',
+    'drinks', 'height', 'age', 'drugs', 'education',
     'orientation', 'pets', 'job'
 ]
 
@@ -62,3 +63,9 @@ plt.xlabel("Importância")
 plt.title("Importância das Features - Random Forest")
 plt.tight_layout()
 plt.show()
+
+# === 8. Salvar o modelo treinado ===
+joblib.dump(rf, "random_forest_model.pkl")
+joblib.dump(feature_diff_names, "model_features.pkl")
+print("\n✅ Modelo salvo como 'random_forest_model.pkl'")
+print("✅ Lista de features salva como 'model_features.pkl'")
