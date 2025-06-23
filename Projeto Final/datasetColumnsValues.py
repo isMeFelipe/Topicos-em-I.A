@@ -14,5 +14,5 @@ def listar_valores_unicos(df: pd.DataFrame, colunas):
     return resultado
 
 df = pd.read_csv("okcupid_profiles.csv")
-valores = listar_valores_unicos(df, ['income'])
+valores = listar_valores_unicos(df, ['drinks','smokes'])
 print(valores)

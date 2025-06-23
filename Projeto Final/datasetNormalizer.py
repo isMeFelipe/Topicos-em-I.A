@@ -8,6 +8,9 @@ from sklearn.preprocessing import LabelEncoder
 df = pd.read_csv("okcupid_profiles.csv")
 
 # Remover colunas de texto livre e completamente vazias
+cols_to_drop = ['location', 'religion', 'sign', 'speaks', 'ethnicity', 'last_online', 'body_type']
+df.drop(columns=[col for col in cols_to_drop if col in df.columns], inplace=True)
+
 essay_cols = [col for col in df.columns if col.startswith('essay')]
 df.drop(columns=essay_cols, inplace=True)
 df.dropna(axis=1, how='all', inplace=True)
@@ -18,7 +21,7 @@ df.dropna(axis=1, how='all', inplace=True)
 
 max_unique = 10
 categorical_cols = df.select_dtypes(include=['object']).columns
-few_cat_cols = [col for col in categorical_cols if df[col].nunique() <= max_unique and col != 'education']
+few_cat_cols = [col for col in categorical_cols if df[col].nunique() <= max_unique and col != 'education' and col != 'orientation' and col != 'sex' and col != 'drinks' and col != 'smokes']
 
 label_encoders = {}
 for col in few_cat_cols:
@@ -191,6 +194,58 @@ def map_income(value):
 df['income_grouped'] = df['income'].apply(map_income)
 df = df.drop(columns=['income'])
 df = df.rename(columns={'income_grouped': 'income'})
+
+
+# =======================================
+#  10. Orientation em valores discretizados
+# =======================================
+
+orientation_mapping = {'gay': 0, 'bisexual': 1, 'straight': 2}
+df['orientation_group'] = df['orientation'].map(orientation_mapping).fillna(-1).astype(int)
+
+df = df.drop(columns=['orientation'])
+df = df.rename(columns={'orientation_group': 'orientation'})
+
+# =======================================
+# 11. Sex em valores discretizados
+# =======================================
+
+sex_mapping = {'m': 0, 'f': 1}
+df['sex_group'] = df['sex'].map(sex_mapping).fillna(-1).astype(int)
+
+df = df.drop(columns=['sex'])
+df = df.rename(columns={'sex_group': 'sex'})
+
+# =======================================
+# 12. Agrupar 'drinks'
+# =======================================
+
+# Mapeamento para drinks
+drinks_mapping = {
+    'not at all': 0,
+    'rarely': 1,
+    'socially': 1,
+    'often': 2,
+    'very often': 2,
+    'desperately': 2
+}
+df['drinks_grouped'] = df['drinks'].map(drinks_mapping).fillna(-1).astype(int)
+df = df.drop(columns=['drinks'])
+df = df.rename(columns={'drinks_grouped': 'drinks'})
+
+# =======================================
+# 13. Agrupar 'smokes'
+# =======================================
+smokes_mapping = {
+    'no': 0,
+    'trying to quit': 0,
+    'sometimes': 1,
+    'when drinking': 1,
+    'yes': 1
+}
+df['smokes_grouped'] = df['smokes'].map(smokes_mapping).fillna(-1).astype(int)
+df = df.drop(columns=['smokes'])
+df = df.rename(columns={'smokes_grouped': 'smokes'})
 
 # =======================================
 # Salvar resultado
