@@ -2,6 +2,7 @@
 #include "globals.h"
 #include "game.h"
 #define STB_IMAGE_IMPLEMENTATION
+#include <SDL2/SDL_mixer.h>
 #include "stb_image.h"
 #include <iostream>
 
@@ -276,24 +277,32 @@ void playerKeyPress(unsigned char key, int x, int y)
             playerHealth = 5;
             initGame(); // reinicia variáveis do jogo
             Mix_HaltMusic();
-            if (Mix_PlayingMusic()) { // Se *alguma* música estiver tocando
-                Mix_RewindMusic(); // Rewind a música atual (se for a bgMusic)
-                Mix_HaltMusic();   // Garante que ela pare
+            
+            printf("DEBUG: bgMusic antes de tentar tocar no reinício: %p\n", (void*)bgMusic); 
+
+            Mix_HaltMusic();
+
+            if (bgMusic) { //
+                Mix_FreeMusic(bgMusic);
+                bgMusic = nullptr; 
             }
 
-            // Agora, com certeza não há música tocando.
-            // Tentar reproduzir a música de fundo
-            if (bgMusic) { //
-                int result = Mix_PlayMusic(bgMusic, -1); //
-                if (result == -1) {
-                    printf("Erro ao reproduzir bgMusic: %s\n", Mix_GetError()); // Imprimir erro se houver
-                }
+            
+            bgMusic = Mix_LoadMUS("./assets/sounds/music_loop.wav"); 
+            if (!bgMusic) { 
+                printf("Erro crítico: Falha ao recarregar music_loop.wav no reinício: %s\n", Mix_GetError());
             } else {
-                printf("Erro: bgMusic não carregada para reiniciar o jogo.\n");
+                
+                int playResult = Mix_PlayMusic(bgMusic, -1);
+                if (playResult == -1) {
+                    printf("Erro ao iniciar bgMusic recarregada no reinício: %s\n", Mix_GetError());
+                } else {
+                    printf("DEBUG: bgMusic recarregada e iniciada com sucesso.\n");
+                }
             }
             glutPostRedisplay();
         }
-        return; // bloqueia outras teclas enquanto está em game over
+        return; 
     }
 
     if (key == 'a' || key == 'A')
