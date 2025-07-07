@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Layout>
+	<Files>
+		<File Name="src\main.cpp" Top="Yes" Tabpos="1" TopLine="1">
+			<Cursor Line="26" Column="1"/>
+		</File>
+	</Files>
+	<Folders>
+		<Folder Name="src" Expanded="Yes"/>
+		<Folder Name="assets" Expanded="Yes"/>
+	</Folders>
+</Layout>
